@@ -1,6 +1,6 @@
-import { fetchAndCheck } from './utils.js';
+import { AxiosAndCheck } from './utils';
 import iconv from 'iconv-lite';
-import type { SchoolData } from './types.js';
+import type { SchoolData } from './types';
 
 class Comcigan {
   isInitialized: boolean;
@@ -23,34 +23,30 @@ class Comcigan {
    * 클래스를 초기화합니다.
    */
   async init() {
-    try {
-      // comcigan에서 HTML을 가져와 <frame> 태그의 src 속성에서 URL을 추출합니다.
-      const comciganRes = await fetchAndCheck(this.comciganUrl);
-      const comciganHtml = await comciganRes.text();
-      const frameUrlMatch = comciganHtml.match(/<frame [^>]*src='([^']*)'[^>]*>/i);
-  
-      if (frameUrlMatch === null) {
-        throw new Error('<frame> 태그의 src 속성에서 URL을 찾는 데 실패했습니다.');
-      }
-  
-      this.frameUrl = frameUrlMatch[1];
-      this.apiRequestUrl = new URL(this.frameUrl).origin;
-  
-      // frameUrl에서 HTML을 가져와 API 요청에 필요한 값을 추출합니다.
-      const frameRes = await fetchAndCheck(this.frameUrl);
-      const frameHtml = iconv.decode(Buffer.from(await frameRes.arrayBuffer()), 'EUC-KR');
-      const searchCodeMatch = frameHtml.match(/function school_ra\(sc\).*url:'\.\/(.+?)'/i);
-  
-      if (searchCodeMatch === null) {
-        throw new Error('frame HTML에서 API 요청에 필요한 값을 추출하는 데 실패했습니다.');
-      }
-  
-      [this.requestCode, this.searchCode] = searchCodeMatch[1].split('?');
-  
-      this.isInitialized = true;
-    } catch (error) {
-      throw error;
+    // comcigan에서 HTML을 가져와 <frame> 태그의 src 속성에서 URL을 추출합니다.
+    const comciganRes = await AxiosAndCheck(this.comciganUrl);
+    const comciganHtml = comciganRes.data;
+    const frameUrlMatch = comciganHtml.match(/<frame [^>]*src='([^']*)'[^>]*>/i);
+
+    if (frameUrlMatch === null) {
+      throw new Error('<frame> 태그의 src 속성에서 URL을 찾는 데 실패했습니다.');
     }
+
+    this.frameUrl = frameUrlMatch[1];
+    this.apiRequestUrl = new URL(this.frameUrl).origin;
+
+    // frameUrl에서 HTML을 가져와 API 요청에 필요한 값을 추출합니다.
+    const frameRes = await AxiosAndCheck(this.frameUrl, { responseType: 'arraybuffer' });
+    const frameHtml = iconv.decode(Buffer.from(frameRes.data), 'EUC-KR');
+    const searchCodeMatch = frameHtml.match(/function school_ra\(sc\).*url:'\.\/(.+?)'/i);
+
+    if (searchCodeMatch === null) {
+      throw new Error('frame HTML에서 API 요청에 필요한 값을 추출하는 데 실패했습니다.');
+    }
+
+    [this.requestCode, this.searchCode] = searchCodeMatch[1].split('?');
+
+    this.isInitialized = true;
   }
 
   /**
@@ -59,36 +55,32 @@ class Comcigan {
    * @returns 검색된 학교들의 지역, 이름, 코드 리스트를 반환합니다.
    */
   async searchSchool(keyword: string): Promise<SchoolData[]> {
-    try {
-      this.checkIsInitialized();
-      
-      let encodedKeyword = '';
-  
-      for (let buf of iconv.encode(keyword, 'EUC-KR')) {
-        encodedKeyword += '%' + buf.toString(16);
-      }
-  
-      const reqUrl = `${this.apiRequestUrl}/${this.requestCode}?${this.searchCode}${encodedKeyword}`;
-      const res = await fetchAndCheck(reqUrl);
-      const resText = await res.text();
-      const resJson = JSON.parse(resText.substring(0, resText.lastIndexOf('}') + 1));
-      const searchResult = resJson['학교검색'];
+    this.checkIsInitialized();
+    
+    let encodedKeyword = '';
 
-      if (searchResult.length === 0) {
-        throw new Error('학교 검색 결과가 없습니다. 하지만 학교가 존재한다면 해당 학교가 컴시간 시스템을 사용하지 않는 것일 수 있습니다.');
-      }
-  
-      return searchResult.map((schoolData: Array<string | number>) => {
-        return {
-          resType: schoolData[0],
-          region: schoolData[1],
-          schoolName: schoolData[2],
-          schoolCode: schoolData[3]
-        };
-      });
-    } catch (error) {
-      throw error;
+    for (let buf of iconv.encode(keyword, 'EUC-KR')) {
+      encodedKeyword += '%' + buf.toString(16);
     }
+
+    const reqUrl = `${this.apiRequestUrl}/${this.requestCode}?${this.searchCode}${encodedKeyword}`;
+    const res = await AxiosAndCheck(reqUrl);
+    const resText = res.data;
+    const resJson = JSON.parse(resText.substring(0, resText.lastIndexOf('}') + 1));
+    const searchResult = resJson['학교검색'];
+
+    if (searchResult.length === 0) {
+      throw new Error('학교 검색 결과가 없습니다. 하지만 학교가 존재한다면 해당 학교가 컴시간 시스템을 사용하지 않는 것일 수 있습니다.');
+    }
+
+    return searchResult.map((schoolData: Array<string | number>) => {
+      return {
+        resType: schoolData[0],
+        region: schoolData[1],
+        schoolName: schoolData[2],
+        schoolCode: schoolData[3]
+      };
+    });
   }
 
   /**
@@ -101,11 +93,12 @@ class Comcigan {
   }
 }
 
+
 (async () => {
   try {
     const comcigan = new Comcigan();
     await comcigan.init();
-    const searchResult = await comcigan.searchSchool('서대');
+    const searchResult = await comcigan.searchSchool('서대전고');
     console.log(searchResult);
   } catch (error) {
     console.error(error);

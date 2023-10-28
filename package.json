@@ -2,7 +2,6 @@
   "name": "comcigan",
   "version": "0.2.10",
   "description": "컴시간 데이터 추출 라이브러리",
-  "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -20,7 +19,7 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
-    "iconv-lite": "^0.6.3",
-    "node-fetch": "^3.3.2"
+    "axios": "^1.6.0",
+    "iconv-lite": "^0.6.3"
   }
 }

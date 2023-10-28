@@ -1,13 +1,16 @@
-import fetch from 'node-fetch';
+import axios from 'axios';
+import type { AxiosRequestConfig } from 'axios';
 
-async function fetchAndCheck(url: string) {
-  const res = await fetch(url);
-
-  if (!res.ok) {
-    throw new Error(`${res.url}: fetch HTTP 요청에 실패하였습니다. status: ${res.status}`);
+async function AxiosAndCheck(url: string, config?: AxiosRequestConfig) {
+  try {
+    const res = await axios.get(url, config);
+    return res;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(`${error.config?.url}: Axios HTTP 요청에 실패하였습니다.`);
+    }
+    throw error;
   }
-
-  return res;
 }
 
-export { fetchAndCheck };
+export { AxiosAndCheck };
