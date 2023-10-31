@@ -105,7 +105,7 @@ comcigan
   .catch(console.error);
 ```
 
-### `Comcigan.getTimetable()`
+### `async Comcigan.getTimetable()`
 
 전체 학년 및 반의 시간표 정보를 반환합니다.
 
