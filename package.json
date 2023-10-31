@@ -1,6 +1,6 @@
 {
   "name": "comcigan",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "컴시간 데이터 추출 라이브러리",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
