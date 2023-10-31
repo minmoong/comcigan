@@ -10,8 +10,5 @@
     "strict": true,
     "sourceMap": true
   },
-  "include": ["src/**/*"],
-  "ts-node": {
-    "esm": true
-  }
+  "include": ["src/**/*"]
 }
