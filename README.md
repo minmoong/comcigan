@@ -172,7 +172,9 @@ comcigan
   .then(() => {
     comcigan.searchSchool('서대전고등학교').then((res) => {
       comcigan.setSchoolCode(res[0].schoolCode);
-      comcigan.getTimetable().then(console.log);
+      comcigan.getTimetable().then((res) => {
+        console.log(res[1][6][2][6]); // 1학년 6반의 화요일 6교시
+      });
     });
   })
   .catch(console.error);
@@ -183,10 +185,23 @@ try {
   const school = await comcigan.searchSchool('서대전고등학교');
   comcigan.setSchoolCode(school[0].schoolCode);
   const timetable = await comcigan.getTimetable();
-  console.log(timetable);
+  console.log(timetable[1][6][2][6]); // 1학년 6반의 화요일 6교시
 } catch (err) {
   console.error(err);
 }
+
+// 출력
+// {
+//   grd: 1,
+//   cls: 6,
+//   weekday: 2,
+//   period: 6,
+//   teacher: '신순',
+//   subject: '국어A',
+//   classroom: '',
+//   changed: false,
+//   code: ''
+// }
 ```
 
 ## 참조
