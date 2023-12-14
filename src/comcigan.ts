@@ -184,8 +184,9 @@ class Comcigan {
             if (v1 !== v2) changed = true;
 
             // 선생님의 성함과 과목을 추출합니다.
-            let th = Math.floor(v2 / 100);
-            let sb = v2 - th * 100;
+            let div = data['분리'] ?? 100;
+            let th = v2 == 100 ? Math.floor(v2 / div) : v2 % div;
+            let sb = v2 == 100 ? v2 % div : Math.floor(v2 / div);
             let teacher = '';
             let subject = '';
             if (v2 > 100) {
