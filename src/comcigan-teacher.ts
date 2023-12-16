@@ -176,14 +176,14 @@ class ComciganTeacher {
 
           timetable[교사][요일][교시] = {
             changed,
-            cls: cls ?? '',
-            subject: subject ?? '',
+            cls: cls ?? undefined,
+            subject: subject ?? undefined,
           };
         }
       }
     }
 
-    return { timetable, teacherIndex: data['자료446'] };
+    return { teacherTimetable: timetable, teacherIndex: data['자료446'] };
   }
 
   private checkIsReady() {
