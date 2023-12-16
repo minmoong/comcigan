@@ -190,7 +190,7 @@ comciganTeacher
     '박성*', '이규*', '김관*', '이재*', '이미*',
     '김진*', '강윤*', '김용*', '서성*', '창체*'
   ],
-  timetable: {
+  teacherTimetable: {
     '1': {                 // 선생님 성함: teacherIndex[1]의 시간표 데이터
       '1': {               // 월요일 (1: 월요일 ~ 5: 금요일)
         changed: false,    // 시간표 변경됨 여부
@@ -214,7 +214,7 @@ comciganTeacher
 
 시간표 데이터를 얻고 나서 원하는 정보에 접근하는 방법은 다음과 같습니다.
 
-`timetable[선생님 인덱스][요일][교시]`
+`teacherTimetable[선생님 인덱스][요일][교시]`
 
 ## 예시
 
@@ -229,14 +229,14 @@ try {
   await comcigan.init();
   const school = await comcigan.searchSchool('서대전고등학교');
   comcigan.setSchoolCode(school[0].schoolCode);
-  const timetable = await comcigan.getTimetable();
-  console.log(timetable[1][6][2][6]); // 1학년 6반의 화요일 6교시
+  const studentTimetable = await comcigan.getTimetable();
+  console.log(studentTimetable[1][6][2][6]); // 1학년 6반의 화요일 6교시
 
   // ComciganTeacher
   await comciganTeacher.init();
-  const { timetable, teacherIndex } = await comciganTeacher.getTimetable();
+  const { teacherTimetable, teacherIndex } = await comciganTeacher.getTimetable();
   console.log(teacherIndex[1]); // 쌤 성함
-  console.log(timetable[1][1][2]); // teacherIndex[1] 쌤의 월요일 2교시
+  console.log(teacherTimetable[1][1][2]); // teacherIndex[1] 쌤의 월요일 2교시
 } catch (err) {
   console.error(err);
 }
