@@ -1,3 +1,4 @@
 import Comcigan from './comcigan';
+import ComciganTeacher from './comcigan-teacher';
 
-export default Comcigan;
+export { Comcigan, ComciganTeacher };
