@@ -183,7 +183,7 @@ class ComciganTeacher {
       }
     }
 
-    return { teacherTimetable: timetable, teacherIndex: data['자료446'] };
+    return { data: timetable, teacherIndex: data['자료446'] };
   }
 
   private checkIsReady() {

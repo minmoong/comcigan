@@ -9,6 +9,7 @@
 **❤️ 해당 문서에 오탈자나 오류가 있다면 이슈 올려주시면 감사하겠습니다.**
 
 ## 주의 사항
+
 **컴시간 서비스에 등록된, 컴시간 서비스를 사용하는 학교만 데이터 추출이 가능합니다.**
 
 ## 설치
@@ -190,7 +191,7 @@ comciganTeacher
     '박성*', '이규*', '김관*', '이재*', '이미*',
     '김진*', '강윤*', '김용*', '서성*', '창체*'
   ],
-  teacherTimetable: {
+  data: {
     '1': {                 // 선생님 성함: teacherIndex[1]의 시간표 데이터
       '1': {               // 월요일 (1: 월요일 ~ 5: 금요일)
         changed: false,    // 시간표 변경됨 여부
@@ -214,7 +215,7 @@ comciganTeacher
 
 시간표 데이터를 얻고 나서 원하는 정보에 접근하는 방법은 다음과 같습니다.
 
-`teacherTimetable[선생님 인덱스][요일][교시]`
+`data[선생님 인덱스][요일][교시]`
 
 ## 예시
 
@@ -224,22 +225,24 @@ import { Comcigan, ComciganTeacher } from 'comcigan';
 const comcigan = new Comcigan();
 const comciganTeacher = new ComciganTeacher(71433);
 
-try {
-  // Comcigan
-  await comcigan.init();
-  const school = await comcigan.searchSchool('서대전고등학교');
-  comcigan.setSchoolCode(school[0].schoolCode);
-  const studentTimetable = await comcigan.getTimetable();
-  console.log(studentTimetable[1][6][2][6]); // 1학년 6반의 화요일 6교시
+(async () => {
+  try {
+    // Comcigan
+    await comcigan.init();
+    const school = await comcigan.searchSchool('서대전고등학교');
+    comcigan.setSchoolCode(school[0].schoolCode);
+    const studentTimetable = await comcigan.getTimetable();
+    console.log(studentTimetable[1][6][2][6]); // 1학년 6반의 화요일 6교시
 
-  // ComciganTeacher
-  await comciganTeacher.init();
-  const { teacherTimetable, teacherIndex } = await comciganTeacher.getTimetable();
-  console.log(teacherIndex[1]); // 쌤 성함
-  console.log(teacherTimetable[1][1][2]); // teacherIndex[1] 쌤의 월요일 2교시
-} catch (err) {
-  console.error(err);
-}
+    // ComciganTeacher
+    await comciganTeacher.init();
+    const { data, teacherIndex } = await comciganTeacher.getTimetable();
+    console.log(teacherIndex[1]); // 쌤 성함
+    console.log(data[1][1][2]); // teacherIndex[1] 쌤의 월요일 2교시
+  } catch (err) {
+    console.error(err);
+  }
+})();
 
 // 출력
 // {
