@@ -8,7 +8,9 @@ class ComciganTeacher {
   private tApiRequestUrl: string;
   private tRequestCode: string;
   private tScData: string[];
+  private tTimetableData: any;
   private schoolCode: number;
+  teacherIndices: string[];
 
   constructor(schoolCode: number) {
     this.isInitialized = false;
@@ -17,7 +19,9 @@ class ComciganTeacher {
     this.tApiRequestUrl = '';
     this.tRequestCode = '';
     this.tScData = [];
+    this.tTimetableData = {};
     this.schoolCode = schoolCode;
+    this.teacherIndices = [];
   }
 
   async init() {
@@ -57,10 +61,6 @@ class ComciganTeacher {
     this.tScData = tScDataMatch[1].replace(/'/g, '').split(',');
 
     this.isInitialized = true;
-  }
-
-  async getTimetable() {
-    this.checkIsReady();
 
     const encodedParam = Buffer.from(
       `${this.tScData[0]}${this.schoolCode}_0_${this.tScData[2]}`
@@ -73,10 +73,19 @@ class ComciganTeacher {
       resText.substring(0, resText.lastIndexOf('}') + 1)
     );
 
-    return this.parseTimetable(resJson);
+    this.tTimetableData = resJson;
+
+    this.teacherIndices = this.tTimetableData['자료446'];
   }
 
-  private parseTimetable(data: any) {
+  getTimetable(teacherIndex: number) {
+    this.checkIsReady();
+
+    return this.parseTimetable(this.tTimetableData, teacherIndex);
+  }
+
+  private parseTimetable(data: any, teacherIndex: number) {
+    let 교사 = teacherIndex;
     function mTh(mm: number, m2: number) {
       if (m2 == 100) {
         return Math.floor(mm / m2);
@@ -142,48 +151,46 @@ class ComciganTeacher {
     let timetable: any = {};
     let changed: boolean;
 
-    for (let 교사 = 1; 교사 <= data['교사수']; 교사++) {
-      let 분리, 원자료, 교사자료;
-      분리 = data['분리'] ?? 100;
-      for (let 요일 = 1; 요일 < 6; 요일++) {
-        for (let 교시 = 1; 교시 <= 8; 교시++) {
-          let sb: any, cls;
-          교사자료 = data['자료542'][교사][요일][교시] ?? 0;
-          원자료 = data['시간표2'][교사][요일][교시] ?? 0;
+    let 분리, 원자료, 교사자료;
+    분리 = data['분리'] ?? 100;
+    for (let 요일 = 1; 요일 < 6; 요일++) {
+      for (let 교시 = 1; 교시 <= 8; 교시++) {
+        let sb: any, cls;
+        교사자료 = data['자료542'][교사][요일][교시] ?? 0;
+        원자료 = data['시간표2'][교사][요일][교시] ?? 0;
 
-          if (원자료 == 교사자료) {
-            changed = false;
-          } else {
-            changed = true;
-          }
-
-          if (교사자료 > 100) {
-            if (분리 == 100) {
-              cls = mTh(교사자료, 분리);
-              sb = mSb(교사자료, 분리);
-              sb %= 분리;
-            } else {
-              cls = mTh(교사자료, 분리);
-              sb = mSb(교사자료, 분리);
-              sb %= 분리;
-            }
-          }
-
-          let subject = data['자료492'][sb];
-
-          timetable[교사] = timetable[교사] ?? {};
-          timetable[교사][요일] = timetable[교사][요일] ?? {};
-
-          timetable[교사][요일][교시] = {
-            changed,
-            cls: cls ?? undefined,
-            subject: subject ?? undefined,
-          };
+        if (원자료 == 교사자료) {
+          changed = false;
+        } else {
+          changed = true;
         }
+
+        if (교사자료 > 100) {
+          if (분리 == 100) {
+            cls = mTh(교사자료, 분리);
+            sb = mSb(교사자료, 분리);
+            sb %= 분리;
+          } else {
+            cls = mTh(교사자료, 분리);
+            sb = mSb(교사자료, 분리);
+            sb %= 분리;
+          }
+        }
+
+        let subject = data['자료492'][sb];
+
+        timetable[교사] = timetable[교사] ?? {};
+        timetable[교사][요일] = timetable[교사][요일] ?? {};
+
+        timetable[교사][요일][교시] = {
+          changed,
+          cls,
+          subject,
+        };
       }
     }
 
-    return { data: timetable, teacherIndex: data['자료446'] };
+    return timetable;
   }
 
   private checkIsReady() {
